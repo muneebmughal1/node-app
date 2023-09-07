@@ -5,7 +5,7 @@ const port = 80; // You can change this port number if needed
 
 // Sample user data (replace this with your actual data)
 const users = [
-  { id: 1, name: 'John Doe', age: 30 },
+  { id: 1, name: 'John Dooe', age: 30 },
   { id: 2, name: 'Jane Smith', age: 25 },
   { id: 3, name: 'Bob Johnson', age: 40 },
 ];
