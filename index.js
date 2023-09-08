@@ -19,7 +19,7 @@ app.get('/api/users', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.status(200).send('<h1>Hi from Muneeb Mughal.<h1>')
+    res.status(200).send('<h1>Hi from Muneeb Mughal test.<h1>')
   });
 // Start the server
 app.listen(port, () => {
