@@ -23,11 +23,10 @@ pipeline {
                  // Use the PEM key content directly in the ssh command
                 sshagent(credentials: ['15.222.239.203']) {
                   sh """
-                  ssh -i - ubuntu@${EC2_INSTANCE_IP} <<EOF
+                  ssh ubuntu@${EC2_INSTANCE_IP} "
                   cd sample
                   npm install
-                  pm2 restart test
-                  EOF
+                  pm2 restart test"
                   """
                 }
               }
