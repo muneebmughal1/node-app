@@ -16,19 +16,25 @@ pipeline {
         }
 
         stage('Deploy to EC2') {
-            steps {
-                script {
-                    // Copy your Node.js application code to the EC2 instance
-                    sshagent(credentials: [SSH_CREDENTIALS]) {
-                        sh "scp -i /var/lib/jenkins/secrets/15.222.239.203 -r * ubuntu@${EC2_INSTANCE_IP}:/sample"
-                    }
-                    
-                    // Connect to the EC2 instance and perform deployment steps
-                    sshagent(credentials: [SSH_CREDENTIALS]) {
-                        sh "ssh -i /var/lib/jenkins/secrets/15.222.239.203 ubuntu@${EC2_INSTANCE_IP} 'cd /sample && npm install && pm2 restart test'"
-                    }
-                }
+    steps {
+        script {
+            // Store the PEM key content in a variable
+            def pemKey = credentials('15.222.239.203')
+            
+            // Use the PEM key content directly in the ssh command
+            sshagent(credentials: [SSH_CREDENTIALS]) {
+                sh """
+                ssh -i - ec2-user@${EC2_INSTANCE_IP} <<EOF
+                $(echo "$pemKey" | sed 's/^/echo /')
+                cd /sample
+                npm install
+                pm2 restart test
+                EOF
+                """
             }
         }
+    }
+}
+
     }
 }
