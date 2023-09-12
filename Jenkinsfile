@@ -25,7 +25,8 @@ pipeline {
           stages {
             stage('Offloading Green') {
               steps {
-                sh """/usr/local/bin/aws elbv2 modify-listener  --listener-arn ${listenerARN}  default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 0 },{"TargetGroupArn": "${blueARN}", "Weight": 1 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'"""
+                sh """'/usr/local/bin/aws elbv2 modify-listener --listener-arn arn:aws:elasticloadbalancing:ca-central-1:989848885966:loadbalancer/app/blue-green/d19e5f138089f55d default-actions "[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/green/0bb75d3946b71336\", \"Weight\": 0 },{\"TargetGroupArn\": \"arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/blue/0df8b322ca5bcb8c\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]"'
+"""
               }
             }
             stage('Checkout Code') {
