@@ -8,6 +8,7 @@ const users = [
   { id: 1, name: 'John Doe', age: 30 },
   { id: 2, name: 'Jane Smith', age: 25 },
   { id: 3, name: 'Bob Johnson', age: 40 },
+  { id: 3, name: 'Muneeb Mughal', age: 23 }
 ];
 
 // Enable CORS for all routes

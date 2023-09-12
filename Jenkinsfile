@@ -24,9 +24,10 @@ pipeline {
                 sshagent(credentials: ['15.222.239.203']) {
                   sh """
                   ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE_IP} "
-                  cd sample
+                  cd node-app
+                  git pull origin main
                   npm install
-                  pm2 restart test"
+                  pm2 restart index"
                   """
                 }
               }
