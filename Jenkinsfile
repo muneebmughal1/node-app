@@ -25,7 +25,7 @@ pipeline {
             sshagent(credentials: [SSH_CREDENTIALS]) {
                 sh """
                 ssh -i - ec2-user@${EC2_INSTANCE_IP} <<EOF
-                $(echo ${pemKey} | sed 's/^/echo /')
+                echo ${pemKey} | sed 's/^/echo /'
                 cd /sample
                 npm install
                 pm2 restart test
