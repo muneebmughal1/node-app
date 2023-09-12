@@ -23,7 +23,7 @@ pipeline {
                  // Use the PEM key content directly in the ssh command
                 sshagent(credentials: ['15.222.239.203']) {
                   sh """
-                  ssh -v ubuntu@${EC2_INSTANCE_IP} "
+                  ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE_IP} "
                   cd sample
                   npm install
                   pm2 restart test"
