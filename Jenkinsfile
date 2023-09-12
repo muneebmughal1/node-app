@@ -16,25 +16,23 @@ pipeline {
         }
 
         stage('Deploy to EC2') {
-    steps {
-        script {
-            // Store the PEM key content in a variable
-            def pemKey = credentials('15.222.239.203')
+           steps {
+              script {
+
             
-            // Use the PEM key content directly in the ssh command
-            sshagent(credentials: [SSH_CREDENTIALS]) {
-                sh """
-                ssh -i - ec2-user@${EC2_INSTANCE_IP} <<EOF
-                echo ${pemKey} | sed 's/^/echo /'
-                cd sample
-                npm install
-                pm2 restart test
-                EOF
-                """
+                 // Use the PEM key content directly in the ssh command
+                sshagent(credentials: [15.222.239.203]) {
+                  sh """
+                  ssh -i - ubuntu@${EC2_INSTANCE_IP} <<EOF
+                  cd sample
+                  npm install
+                  pm2 restart test
+                  EOF
+                  """
+                }
+              }
             }
         }
-    }
-}
 
     }
 }
