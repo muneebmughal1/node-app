@@ -21,7 +21,7 @@ pipeline {
 
             
                  // Use the PEM key content directly in the ssh command
-                sshagent(credentials: [15.222.239.203]) {
+                sshagent(credentials: ['15.222.239.203']) {
                   sh """
                   ssh -i - ubuntu@${EC2_INSTANCE_IP} <<EOF
                   cd sample
