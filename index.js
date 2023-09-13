@@ -21,12 +21,10 @@ app.get('/api/users', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.status(200).send('Hi from Muneeb Mughal')
+    res.status(200).send('<h1>Hi from Muneeb Mughal</h1>')
   });
   app.get('/health', (req, res) => {
-    res.status(200).json({
-      message:'ok'
-    })
+    res.status(200)
   }); 
 // Start the server
 app.listen(port, () => {
