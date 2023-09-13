@@ -4,7 +4,7 @@ pipeline {
     choice (name: 'chooseNode', choices: ['Green', 'Blue'], description: 'Choose which Environment to Deploy: ')
   }
   environment {
-    listenerARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:loadbalancer/app/blue-green/d19e5f138089f55d'
+    listenerARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:listener/app/blue-green/d19e5f138089f55d/ad6ca7c16847fd9a'
     blueARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/blue/0df8b322ca5bcb8c'
     greenARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/green/0bb75d3946b71336'
     SSH_CREDENTIALS_GREEN = credentials('15.222.239.203')
@@ -25,7 +25,7 @@ pipeline {
           stages {
             stage('Offloading Green') {
               steps {
-                sh """/usr/local/bin/aws elbv2 modify-listener --listener-arn arn:aws:elasticloadbalancing:ca-central-1:989848885966:loadbalancer/app/blue-green/d19e5f138089f55d --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/green/0bb75d3946b71336\", \"Weight\": 0 },{\"TargetGroupArn\": \"arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/blue/0df8b322ca5bcb8c\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
+                sh """/usr/local/bin/aws elbv2 modify-listener --listener-arn arn:aws:elasticloadbalancing:ca-central-1:989848885966:listener/app/blue-green/d19e5f138089f55d/ad6ca7c16847fd9a --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/green/0bb75d3946b71336\", \"Weight\": 0 },{\"TargetGroupArn\": \"arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/blue/0df8b322ca5bcb8c\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
 """
               }
             }
