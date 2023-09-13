@@ -7,9 +7,7 @@ pipeline {
     listenerARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:listener/app/blue-green/d19e5f138089f55d/ad6ca7c16847fd9a'
     blueARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/blue/0df8b322ca5bcb8c'
     greenARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/green/0bb75d3946b71336'
-    SSH_CREDENTIALS_GREEN = credentials('15.222.239.203')
     EC2_INSTANCE_IP_GREEN = '15.222.239.203'
-    SSH_CREDENTIALS_BLUE = credentials('35.183.46.136')
     EC2_INSTANCE_IP_BLUE = '35.183.46.136'
 
   }
@@ -81,7 +79,7 @@ pipeline {
           stages {
             stage('Offloading Blue') {
               steps {
-                sh """/usr/local/bin/aws elbv2 modify-listener – listener-arn ${listenerARN} – default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 1 },{"TargetGroupArn": "${blueARN}", "Weight": 0 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'"""
+                sh """/usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 0 },{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'"""
               }
             }
             stage('Checkout Code') {
@@ -97,7 +95,7 @@ pipeline {
 
             
                  // Use the PEM key content directly in the ssh command
-                sshagent(credentials: ['35.183.46.136']) {
+                sshagent(credentials: [EC2_INSTANCE_IP_BLUE]) {
                   sh """
                   ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE_IP_BLUE} "
                   cd node-app
@@ -112,14 +110,14 @@ pipeline {
             stage('Validate Blue and added to TG') {
               steps {
                 sh """
-                if [ "\$(curl -o /dev/null – silent – head – write-out '%{http_code}' http://${EC2_INSTANCE_IP_BLUE}/)" -eq 200 ]
+                if [ "\$(curl -o /dev/null -s -I -w '%{http_code}' http://${EC2_INSTANCE_IP_BLUE}/health)" -eq 200 ]
                 then
                     echo "** BUILD IS SUCCESSFUL **"
-                    curl -I http://${EC2_INSTANCE_IP_BLUE}/
-                    /usr/local/bin/aws elbv2 modify-listener – listener-arn ${listenerARN} – default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 1 },{"TargetGroupArn": "${blueARN}", "Weight": 1 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'
+                    curl -I http://${EC2_INSTANCE_IP_BLUE}/health
+                    /usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 0 },{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
                 else
                     echo "** BUILD IS FAILED ** Health check returned non 200 status code"
-                    curl -I http://${EC2_INSTANCE_IP_BLUE}/
+                    curl -I http://${EC2_INSTANCE_IP_BLUE}/health
                 exit 2
                 fi
                 """
