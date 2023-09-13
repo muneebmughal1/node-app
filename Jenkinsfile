@@ -57,7 +57,7 @@ pipeline {
             stage('Validate and Add Green for testing') {
               steps {
                 sh """
-                if [ "\$(curl -o /dev/null – silent – head – write-out '%{http_code}' http://${EC2_INSTANCE_IP_GREEN}/health)" -eq OK ]
+                if [ "\$(curl -o /dev/null -s -I -w '%{http_code}' http://${EC2_INSTANCE_IP_GREEN}/health)" -eq 200 ]
                 then
                     echo "** BUILD IS SUCCESSFUL **"
                     curl -I http://${EC2_INSTANCE_IP_GREEN}/health
