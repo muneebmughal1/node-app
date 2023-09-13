@@ -21,7 +21,7 @@ app.get('/api/users', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.status(200)
+    res.status(200).send(200)
   });
 // Start the server
 app.listen(port, () => {
