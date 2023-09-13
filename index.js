@@ -23,9 +23,11 @@ app.get('/api/users', (req, res) => {
 app.get('/', (req, res) => {
     res.status(200).send('<h1>Hi from Muneeb Mughal</h1>')
   });
-  app.get('/health', (req, res) => {
-    res.statusCode(200)
-  }); 
+
+app.get('/health', (req, res) => {
+    res.statusCode = 200;
+    res.send('ok');
+}); 
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
