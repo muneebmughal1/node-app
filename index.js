@@ -21,7 +21,7 @@ app.get('/api/users', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.status(200).send(200)
+    res.status(200).send('Hi from Muneeb Mughal')
   });
   app.get('/health', (req, res) => {
     res.status(200).json({
