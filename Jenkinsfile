@@ -42,7 +42,7 @@ pipeline {
 
             
                  // Use the PEM key content directly in the ssh command
-                sshagent(credentials: SSH_CREDENTIALS_GREEN) {
+                sshagent(credentials: [EC2_INSTANCE_IP_GREEN]) {
                   sh """
                   ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE_IP_GREEN} "
                   cd node-app
