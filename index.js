@@ -25,8 +25,7 @@ app.get('/', (req, res) => {
   });
 
 app.get('/health', (req, res) => {
-    res.statusCode = 200;
-    res.send('ok');
+    res.sendStatus(200);
 }); 
 // Start the server
 app.listen(port, () => {
