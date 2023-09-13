@@ -24,7 +24,7 @@ app.get('/', (req, res) => {
     res.status(200).send('<h1>Hi from Muneeb Mughal</h1>')
   });
   app.get('/health', (req, res) => {
-    res.status(200)
+    res.statusCode(200)
   }); 
 // Start the server
 app.listen(port, () => {
