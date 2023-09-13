@@ -60,11 +60,11 @@ pipeline {
                 if [ "\$(curl -o /dev/null – silent – head – write-out '%{http_code}' http://${EC2_INSTANCE_IP_GREEN}/)" -eq 200 ]
                 then
                     echo "** BUILD IS SUCCESSFUL **"
-                    curl -I http:///${EC2_INSTANCE_IP_GREEN}/
+                    curl -I http://${EC2_INSTANCE_IP_GREEN}/health
                     /usr/local/bin/aws elbv2 modify-listener – listener-arn ${listenerARN} – default-actions '[{"Type": "forward","Order": 1,"ForwardConfig": {"TargetGroups": [{"TargetGroupArn": "${greenARN}", "Weight": 0 },{"TargetGroupArn": "${blueARN}", "Weight": 1 }],"TargetGroupStickinessConfig": {"Enabled": true,"DurationSeconds": 1}}}]'
                 else
                     echo "** BUILD IS FAILED ** Health check returned non 200 status code"
-                    curl -I http://${EC2_INSTANCE_IP_GREEN}/
+                    curl -I http://${EC2_INSTANCE_IP_GREEN}/health
                 exit 2
                 fi
                 """
