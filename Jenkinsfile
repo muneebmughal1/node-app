@@ -5,8 +5,8 @@ pipeline {
   }
   environment {
     listenerARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:listener/app/blue-green/d19e5f138089f55d/ad6ca7c16847fd9a'
-    blueARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/blue/04264d073ac223e5'
-    greenARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/green/772ae0d266c96ba0'
+    blueARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/blue/2fd64790fc28b096'
+    greenARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/green/2983de9fc0c72cb6'
     EC2_INSTANCE_IP_GREEN = '15.222.239.203'
     EC2_INSTANCE_IP_BLUE = '35.183.46.136'
 
