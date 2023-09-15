@@ -21,7 +21,7 @@ app.get('/api/users', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.status(200).send('<h1>Hello World V1.0.0</h1>')
+    res.status(200).send('<h1>Hello World V1.0.1</h1>')
   });
 
 app.get('/health', (req, res) => {
