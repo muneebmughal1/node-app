@@ -52,7 +52,7 @@ pipeline {
               }
             }
         }
-            stage('Validate and Add Green for testing') {
+            stage('Validate and Add Canary environment for testing') {
               steps {
                 sh """
                 if [ "\$(curl -o /dev/null -s -I -w '%{http_code}' http://${EC2_INSTANCE_IP_GREEN}/health)" -eq 200 ]
@@ -107,7 +107,7 @@ pipeline {
               }
             }
         }
-            stage('Validate Blue and added to TG') {
+            stage('Validating Deployment') {
               steps {
                 sh """
                 if [ "\$(curl -o /dev/null -s -I -w '%{http_code}' http://${EC2_INSTANCE_IP_BLUE}/health)" -eq 200 ]
