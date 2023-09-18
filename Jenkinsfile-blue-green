@@ -1,7 +1,7 @@
 pipeline {
   agent any
   parameters {
-    choice (name: 'chooseNode', choices: ['Canary Deployment', 'Regular Deployment'], description: 'Choose which Environment to Deploy: ')
+    choice (name: 'chooseNode', choices: ['Green', 'Blue'], description: 'Choose which Environment to Deploy: ')
   }
   environment {
     listenerARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:listener/app/blue-green/d19e5f138089f55d/ad6ca7c16847fd9a'
@@ -14,16 +14,16 @@ pipeline {
   stages {
     stage('Deployment Started') {
       parallel {
-        stage('Canary Deployment') {
+        stage('Green') {
           when {
             expression {
-              params.chooseNode == 'Canary Deployment'
+              params.chooseNode == 'Green'
             }
           }
           stages {
-            stage('Offloading Canary Environment') {
+            stage('Offloading Green') {
               steps {
-                sh """/usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 5 },{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 95 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
+                sh """/usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 0 },{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
 """
               }
             }
@@ -59,7 +59,7 @@ pipeline {
                 then
                     echo "** BUILD IS SUCCESSFUL **"
                     curl -I http://${EC2_INSTANCE_IP_GREEN}/health
-                    /usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 5 },{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 95 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
+                    /usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 0 },{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
                 else
                     echo "** BUILD IS FAILED ** Health check returned non 200 status code"
                     curl -I http://${EC2_INSTANCE_IP_GREEN}/health
@@ -70,16 +70,16 @@ pipeline {
             }
           }
         }
-        stage('Regular Deployment') {
+        stage('Blue') {
           when {
             expression {
-              params.chooseNode == 'Regular Deployment'
+              params.chooseNode == 'Blue'
             }
           }
           stages {
-            stage('Dividing traffic') {
+            stage('Offloading Blue') {
               steps {
-                sh """/usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 1 },{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'"""
+                sh """/usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 0 },{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'"""
               }
             }
             stage('Checkout Code') {
@@ -114,7 +114,7 @@ pipeline {
                 then
                     echo "** BUILD IS SUCCESSFUL **"
                     curl -I http://${EC2_INSTANCE_IP_BLUE}/health
-                    /usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 1 },{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
+                    /usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 0 },{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
                 else
                     echo "** BUILD IS FAILED ** Health check returned non 200 status code"
                     curl -I http://${EC2_INSTANCE_IP_BLUE}/health
