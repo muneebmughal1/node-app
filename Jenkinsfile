@@ -37,8 +37,6 @@ pipeline {
         stage('Deploy to EC2') {
            steps {
               script {
-
-            
                  // Use the PEM key content directly in the ssh command
                 sshagent(credentials: [EC2_INSTANCE_IP_GREEN]) {
                   sh """
@@ -91,9 +89,7 @@ pipeline {
 
         stage('Deploy to EC2') {
            steps {
-              script {
-
-            
+              script {            
                  // Use the PEM key content directly in the ssh command
                 sshagent(credentials: [EC2_INSTANCE_IP_BLUE]) {
                   sh """
