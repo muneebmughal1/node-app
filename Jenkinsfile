@@ -4,9 +4,9 @@ pipeline {
     choice (name: 'chooseNode', choices: ['Canary Deployment', 'Regular Deployment'], description: 'Choose which Environment to Deploy: ')
   }
   environment {
-    listenerARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:listener/app/blue-green/d19e5f138089f55d/ad6ca7c16847fd9a'
-    server1 = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/blue/2fd64790fc28b096'
-    server2 = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/green/2983de9fc0c72cb6'
+    listenerARN = 'arn:aws:elasticloadbalancing:us-east-2:328164419144:listener/app/test/f1063324cb00d2c1/77607d396902e9e8'
+    server1 = 'arn:aws:elasticloadbalancing:us-east-2:328164419144:targetgroup/server1/b7d7c0a805b1bc56'
+    server2 = 'arn:aws:elasticloadbalancing:us-east-2:328164419144:targetgroup/server2/fbe4e7eaa434b1dd'
     EC2_INSTANCE_IP_SERVER2 = '3.14.246.92'
     EC2_INSTANCE_IP_SERVER1 = '18.219.145.144'
 
