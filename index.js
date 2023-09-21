@@ -7,9 +7,7 @@ const port = 3000; // You can change this port number if needed
 const users = [
   { id: 1, name: 'John Doe', age: 30 },
   { id: 2, name: 'Jane Smith', age: 25 },
-  { id: 3, name: 'Bob Johnson', age: 40 },
-  { id: 3, name: 'Muneeb Mughal', age: 23 },
-  { id: 3, name: 'Muneeb Mughal', age: 25 }
+  { id: 3, name: 'Bob Johnson', age: 40 }
 ];
 
 // Enable CORS for all routes
@@ -21,7 +19,7 @@ app.get('/api/users', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.status(200).send('<h1>Hello World V1.0.0</h1>')
+    res.status(200).send('<h1>Hello World V1.0.1</h1>')
   });
 
 app.get('/health', (req, res) => {
