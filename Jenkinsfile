@@ -5,10 +5,10 @@ pipeline {
   }
   environment {
     listenerARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:listener/app/blue-green/d19e5f138089f55d/ad6ca7c16847fd9a'
-    blueARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/blue/2fd64790fc28b096'
-    greenARN = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/green/2983de9fc0c72cb6'
-    EC2_INSTANCE_IP_GREEN = '15.222.239.203'
-    EC2_INSTANCE_IP_BLUE = '35.183.46.136'
+    server1 = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/blue/2fd64790fc28b096'
+    server2 = 'arn:aws:elasticloadbalancing:ca-central-1:989848885966:targetgroup/green/2983de9fc0c72cb6'
+    EC2_INSTANCE_IP_SERVER2 = '3.14.246.92'
+    EC2_INSTANCE_IP_SERVER1 = '18.219.145.144'
 
   }
   stages {
@@ -23,7 +23,7 @@ pipeline {
           stages {
             stage('Offloading Canary Environment') {
               steps {
-                sh """/usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 5 },{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 95 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
+                sh """/usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${server2}\", \"Weight\": 5 },{\"TargetGroupArn\": \"${server1}\", \"Weight\": 95 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
 """
               }
             }
@@ -38,9 +38,9 @@ pipeline {
            steps {
               script {
                  // Use the PEM key content directly in the ssh command
-                sshagent(credentials: [EC2_INSTANCE_IP_GREEN]) {
+                sshagent(credentials: [EC2_INSTANCE_IP_SERVER2]) {
                   sh """
-                  ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE_IP_GREEN} "
+                  ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE_IP_SERVER2} "
                   cd node-app
                   git pull origin main
                   npm install
@@ -53,14 +53,14 @@ pipeline {
             stage('Validate and Add Canary environment for testing') {
               steps {
                 sh """
-                if [ "\$(curl -o /dev/null -s -I -w '%{http_code}' http://${EC2_INSTANCE_IP_GREEN}/health)" -eq 200 ]
+                if [ "\$(curl -o /dev/null -s -I -w '%{http_code}' http://${EC2_INSTANCE_IP_SERVER2}/)" -eq 200 ]
                 then
                     echo "** BUILD IS SUCCESSFUL **"
-                    curl -I http://${EC2_INSTANCE_IP_GREEN}/health
-                    /usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 5 },{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 95 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
+                    curl -I http://${EC2_INSTANCE_IP_SERVER2}/
+                    /usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${server2}\", \"Weight\": 5 },{\"TargetGroupArn\": \"${server1}\", \"Weight\": 95 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
                 else
                     echo "** BUILD IS FAILED ** Health check returned non 200 status code"
-                    curl -I http://${EC2_INSTANCE_IP_GREEN}/health
+                    curl -I http://${EC2_INSTANCE_IP_SERVER2}/
                 exit 2
                 fi
                 """
@@ -77,7 +77,7 @@ pipeline {
           stages {
             stage('Dividing traffic') {
               steps {
-                sh """/usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 1 },{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'"""
+                sh """/usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${server1}\", \"Weight\": 1 },{\"TargetGroupArn\": \"${server2}\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'"""
               }
             }
             stage('Checkout Code') {
@@ -91,9 +91,9 @@ pipeline {
            steps {
               script {            
                  // Use the PEM key content directly in the ssh command
-                sshagent(credentials: [EC2_INSTANCE_IP_BLUE]) {
+                sshagent(credentials: [EC2_INSTANCE_IP_SERVER1]) {
                   sh """
-                  ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE_IP_BLUE} "
+                  ssh -o StrictHostKeyChecking=no ubuntu@${EC2_INSTANCE_IP_SERVER1} "
                   cd node-app
                   git pull origin main
                   npm install
@@ -106,14 +106,14 @@ pipeline {
             stage('Validating Deployment') {
               steps {
                 sh """
-                if [ "\$(curl -o /dev/null -s -I -w '%{http_code}' http://${EC2_INSTANCE_IP_BLUE}/health)" -eq 200 ]
+                if [ "\$(curl -o /dev/null -s -I -w '%{http_code}' http://${EC2_INSTANCE_IP_SERVER1}/)" -eq 200 ]
                 then
                     echo "** BUILD IS SUCCESSFUL **"
-                    curl -I http://${EC2_INSTANCE_IP_BLUE}/health
-                    /usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${blueARN}\", \"Weight\": 1 },{\"TargetGroupArn\": \"${greenARN}\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
+                    curl -I http://${EC2_INSTANCE_IP_SERVER1}/
+                    /usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${server1}\", \"Weight\": 1 },{\"TargetGroupArn\": \"${server2}\", \"Weight\": 1 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
                 else
                     echo "** BUILD IS FAILED ** Health check returned non 200 status code"
-                    curl -I http://${EC2_INSTANCE_IP_BLUE}/health
+                    curl -I http://${EC2_INSTANCE_IP_SERVER1}/
                 exit 2
                 fi
                 """
