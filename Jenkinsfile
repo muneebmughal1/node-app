@@ -23,7 +23,7 @@ pipeline {
           stages {
             stage('Offloading Canary Environment') {
               steps {
-                sh """/usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${server2}\", \"Weight\": 5 },{\"TargetGroupArn\": \"${server1}\", \"Weight\": 95 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
+                sh """/usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${server2}\", \"Weight\": 1 },{\"TargetGroupArn\": \"${server1}\", \"Weight\": 9 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
 """
               }
             }
@@ -57,7 +57,7 @@ pipeline {
                 then
                     echo "** BUILD IS SUCCESSFUL **"
                     curl -I http://${EC2_INSTANCE_IP_SERVER2}/
-                    /usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${server2}\", \"Weight\": 5 },{\"TargetGroupArn\": \"${server1}\", \"Weight\": 95 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
+                    /usr/local/bin/aws elbv2 modify-listener --listener-arn ${listenerARN} --default-actions '[{\"Type\": \"forward\",\"Order\": 1,\"ForwardConfig\": {\"TargetGroups\": [{\"TargetGroupArn\": \"${server2}\", \"Weight\": 1 },{\"TargetGroupArn\": \"${server1}\", \"Weight\": 9 }],\"TargetGroupStickinessConfig\": {\"Enabled\": true,\"DurationSeconds\": 1}}}]'
                 else
                     echo "** BUILD IS FAILED ** Health check returned non 200 status code"
                     curl -I http://${EC2_INSTANCE_IP_SERVER2}/
